@@ -1,70 +1,83 @@
 <launch>
     <node pkg="subwoofer" exec="servo" name="hip" namespace="/subwoofer/leg_1/">
         <param name="simulated" value="True" />
-        <param name="pwm_channel" value="-1" />
+        <param name="pwm_channel" value="5" />
         <param name="flipped" value="false" />
+        <param name="initial_angle" value="0" />
     </node>
     <node pkg="subwoofer" exec="servo" name="upper" namespace="/subwoofer/leg_1/">
         <param name="simulated" value="True" />
-        <param name="pwm_channel" value="-1" />
+        <param name="pwm_channel" value="2" />
         <param name="flipped" value="false" />
+        <param name="initial_angle" value="80" />
     </node>
     <node pkg="subwoofer" exec="servo" name="lower" namespace="/subwoofer/leg_1/">
         <param name="simulated" value="True" /> 
-        <param name="pwm_channel" value="-1" />
+        <param name="pwm_channel" value="0" />
         <param name="flipped" value="false" />
+        <param name="initial_angle" value="-90" />
     </node>
     
     <node pkg="subwoofer" exec="servo" name="hip" namespace="/subwoofer/leg_2/">
         <param name="simulated" value="True" />
-        <param name="pwm_channel" value="-1" />
+        <param name="pwm_channel" value="4" />
         <param name="flipped" value="false" />
+        <param name="initial_angle" value="0" />
     </node>
     <node pkg="subwoofer" exec="servo" name="upper" namespace="/subwoofer/leg_2/">
         <param name="simulated" value="True" />
-        <param name="pwm_channel" value="-1" />
+        <param name="pwm_channel" value="3" />
         <param name="flipped" value="false" />
+        <param name="initial_angle" value="-80" />
     </node>
     <node pkg="subwoofer" exec="servo" name="lower" namespace="/subwoofer/leg_2/">
         <param name="simulated" value="True" />
-        <param name="pwm_channel" value="-1" />
+        <param name="pwm_channel" value="1" />
         <param name="flipped" value="false" />
+        <param name="initial_angle" value="90" />
     </node>
 
     <node pkg="subwoofer" exec="servo" name="hip" namespace="/subwoofer/leg_3/">
         <param name="simulated" value="True" />
-        <param name="pwm_channel" value="-1" />
+        <param name="pwm_channel" value="7" />
         <param name="flipped" value="false" />
+        <param name="initial_angle" value="0" />
     </node>
     <node pkg="subwoofer" exec="servo" name="upper" namespace="/subwoofer/leg_3/">
         <param name="simulated" value="True" />
-        <param name="pwm_channel" value="-1" />
+        <param name="pwm_channel" value="13" />
         <param name="flipped" value="false" />
+        <param name="initial_angle" value="60" />
     </node>
     <node pkg="subwoofer" exec="servo" name="lower" namespace="/subwoofer/leg_3/">
         <param name="simulated" value="True" />
-        <param name="pwm_channel" value="-1" />
+        <param name="pwm_channel" value="15" />
         <param name="flipped" value="false" />
+        <param name="initial_angle" value="-100" />
     </node>
 
     <node pkg="subwoofer" exec="servo" name="hip" namespace="/subwoofer/leg_4/">
         <param name="simulated" value="True" />
-        <param name="pwm_channel" value="-1" />
+        <param name="pwm_channel" value="6" />
         <param name="flipped" value="false" />
+        <param name="initial_angle" value="0" />
     </node>
     <node pkg="subwoofer" exec="servo" name="upper" namespace="/subwoofer/leg_4/">
         <param name="simulated" value="True" />
-        <param name="pwm_channel" value="-1" />
+        <param name="pwm_channel" value="12" />
         <param name="flipped" value="false" />
+        <param name="initial_angle" value="-80" />
     </node>
     <node pkg="subwoofer" exec="servo" name="lower" namespace="/subwoofer/leg_4/">
         <param name="simulated" value="True" />
-        <param name="pwm_channel" value="-1" />
+        <param name="pwm_channel" value="14" />
         <param name="flipped" value="false" />
+        <param name="initial_angle" value="100" />
     </node>
 
+    <!--
     <node pkg="subwoofer" exec="leg" name="leg_1" namespace="/subwoofer/" />
     <node pkg="subwoofer" exec="leg" name="leg_2" namespace="/subwoofer/" />
     <node pkg="subwoofer" exec="leg" name="leg_3" namespace="/subwoofer/" />
-    <node pkg="subwoofer" exec="leg" name="leg_4" namespace="/subwoofer/" />
+    <node pkg="subwoofer" exec="leg" name="leg_4" namespace="/subwoofer/" />-->
 </launch>

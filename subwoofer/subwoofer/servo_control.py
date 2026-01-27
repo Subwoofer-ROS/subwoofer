@@ -34,10 +34,12 @@ class ServoControl(Node):
         self.declare_parameter("min_angle", -90)
         self.declare_parameter("max_angle", 90)
         self.declare_parameter("max_velocity", 90)
-        self.declare_parameter("flipped", False)
+        self.declare_parameter("flipped", False)    
+        self.declare_parameter("initial_angle", 0)
 
-        self.current_angle = 0
+        self.current_angle = self.get_parameter("initial_angle").value
         self.aim_angle = self.current_angle
+        self.get_logger().info(f"Initial angle: {self.get_parameter('initial_angle').value}")
         self.current_speed = self.get_parameter("max_velocity").value
 
         self.min_angle = self.get_parameter("min_angle").value
@@ -64,6 +66,9 @@ class ServoControl(Node):
         self.servo_update_service = self.create_service(ServoMotion,
                                                         f"{self.get_name()}/move",
                                                         self.on_servo_request)
+
+    def shutdown(self):
+        self.channel.duty_cycle = 0
 
     def servo_init(self):
         """
@@ -170,4 +175,5 @@ def main(args=None):
     except rclpy.executors.ExternalShutdownException:
         sys.exit(1)
     finally:
+        node.shutdown()
         node.destroy_node()
