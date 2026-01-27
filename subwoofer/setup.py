@@ -29,6 +29,7 @@ setup(
             "servo = subwoofer.servo_control:main",
             "leg = subwoofer.leg_control:main",
             "FaceDetection = subwoofer.face_detection:main",
+            "controller = subwoofer.control_ui:main"
         ],
     },
 )
