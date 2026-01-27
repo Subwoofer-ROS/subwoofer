@@ -5,7 +5,7 @@ This code is recommended to be offloaded onto a separate device for improved pro
 """
 
 # Message types
-from sensor_msgs.msg import CompressedImage
+from sensor_msgs.msg import CompressedImage, Image
 from subwoofer_interfaces.msg import FacePoint, FacePoints
 
 # ROS libraries
@@ -67,9 +67,15 @@ class FaceDetection(Node):
             10
         )
 
-        self.face_box_pub = self.create_publisher(
+        self.face_box_compressed_pub = self.create_publisher(
             CompressedImage,
             "/subwoofer/face_detector/compressed",
+            10
+        )
+
+        self.face_box_pub = self.create_publisher(
+            Image,
+            "/subwoofer/face_detector",
             10
         )
 
@@ -113,7 +119,11 @@ class FaceDetection(Node):
 
         # Re-compress image, then publish it
         msg2 = self.bridge.cv2_to_compressed_imgmsg(img)
-        self.face_box_pub.publish(msg2)
+        self.face_box_compressed_pub.publish(msg2)
+
+        # Publish non-compressed image
+        msg3 = self.bridge.cv2_to_imgmsg(img, encoding='rgb8')
+        self.face_box_pub.publish(msg3)
 
 
 
