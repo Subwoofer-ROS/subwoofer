@@ -4,7 +4,7 @@ project(subwoofer_model)
 find_package(ament_cmake REQUIRED)
 
 install(
-  DIRECTORY images launch meshes rviz urdf
+  DIRECTORY worlds launch meshes rviz urdf
   DESTINATION share/${PROJECT_NAME}
 )
 
