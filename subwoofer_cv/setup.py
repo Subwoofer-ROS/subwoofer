@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 import os
 from glob import glob
 
-package_name = 'subwoofer'
+package_name = 'subwoofer_cv'
 
 setup(
     name=package_name,
@@ -16,20 +16,23 @@ setup(
             os.path.join("share", package_name, "launch"),
             glob(os.path.join("launch", "*launch.[pxy][yma]*"))
         ),
+        (
+            os.path.join("share", package_name, "statics"),
+            glob(os.path.join("statics", "*"))
+        ),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='Sondre Flakstad',
+    maintainer='Sondre Meiland-Flakstad',
     maintainer_email='SondreFlakstad@outlook.com',
     description='TODO: Package description',
     license='MIT',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            "servo = subwoofer.servo_control:main",
-            "leg = subwoofer.leg_control:main",
-            "controller = subwoofer.control_ui:main",
-            "subwoofer = subwoofer.subwoofer:main"
+            "FaceDetection = subwoofer.face_detection:main",
+            "BackgroundSubtraction = subwoofer.image_motion:main",
+            "EdgeDetection = subwoofer.edge_detection:main",
         ],
     },
 )

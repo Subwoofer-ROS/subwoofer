@@ -1,3 +1,4 @@
+int8 servo_id
 float32 angle
 float32 velocity
 ---

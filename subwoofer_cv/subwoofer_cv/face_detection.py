@@ -122,7 +122,7 @@ class FaceDetection(Node):
         self.face_box_compressed_pub.publish(msg2)
 
         # Publish non-compressed image
-        msg3 = self.bridge.cv2_to_imgmsg(img, encoding='rgb8')
+        msg3 = self.bridge.cv2_to_imgmsg(img, encoding='bgr8')
         self.face_box_pub.publish(msg3)
 
 

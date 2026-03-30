@@ -1,5 +1,0 @@
-<launch>
-    <node pkg="subwoofer" exec="FaceDetection" namespace="/subwoofer">
-        <param name="cascade_path" value="/home/sondre/subwoofer/static/haarcascade_frontalface_default.xml" />
-    </node>
-</launch>
