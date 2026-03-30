@@ -45,7 +45,6 @@ def generate_launch_description():
     )
 
 
-
     return LaunchDescription([
         robot_node,
         rsp_node,
