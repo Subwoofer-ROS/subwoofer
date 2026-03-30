@@ -6,8 +6,6 @@
 
     <xacro:create_body />
 
-    
-
     <xacro:create_left_leg
         parent="front_outer_shoulder"
         name="front_left"
@@ -28,26 +26,4 @@
         name="back_right"
         xyz="${37*scale} ${0*scale} ${7*scale}" />
 
-
-    
-
-
-  <!-- Joint publish test -->
-  <plugin
-    filename="ignition-gazebo-joint-state-publisher-system"
-    name="ignition::gazebo::systems::JointStatePublisher">
-  </plugin>
-
-  <plugin
-    filename="ignition-gazebo-joint-controller-system"
-    name="ignition::gazebo::systems::JointController">
-    <joint_name>front_right_hip_servo_to_front_outer_shoulder</joint_name>
-  </plugin>
-
-  <plugin
-    filename="ignition-gazebo-pose-publisher-system"
-    name="ignition::gazebo::systems::PosePublisher">
-    <publish_link_pose>true</publish_link_pose>
-    <use_pose_vector_msg>true</use_pose_vector_msg>
-  </plugin>
 </robot>
