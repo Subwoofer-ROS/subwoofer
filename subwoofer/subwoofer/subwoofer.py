@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
-import sys
+from rclpy.qos import QoSProfile
+import numpy as np
 import time
 from adafruit_pca9685 import PCA9685
 from adafruit_pca9685 import PWMChannel
@@ -9,7 +10,12 @@ from busio import I2C
 
 from std_msgs.msg import Float32
 from subwoofer_interfaces.msg import ServoAngles
+from sensor_msgs.msg import JointState
 from subwoofer_interfaces.srv import ServoMotion
+from geometry_msgs.msg import Quaternion
+
+from tf2_ros import TransformBroadcaster, TransformStamped
+
 
 
 class Servo:
@@ -81,38 +87,81 @@ class Servo:
         self.last_servo_update = time.time()
 
 
-
+def euler_to_quaternion(roll, pitch, yaw):
+    qx = np.sin(roll/2) * np.cos(pitch/2) * np.cos(yaw/2) - np.cos(roll/2) * np.sin(pitch/2) * np.sin(yaw/2)
+    qy = np.cos(roll/2) * np.sin(pitch/2) * np.cos(yaw/2) + np.sin(roll/2) * np.cos(pitch/2) * np.sin(yaw/2)
+    qz = np.cos(roll/2) * np.cos(pitch/2) * np.sin(yaw/2) - np.sin(roll/2) * np.sin(pitch/2) * np.cos(yaw/2)
+    qw = np.cos(roll/2) * np.cos(pitch/2) * np.cos(yaw/2) + np.sin(roll/2) * np.sin(pitch/2) * np.sin(yaw/2)
+    return Quaternion(x=qx, y=qy, z=qz, w=qw)
 
 class Subwoofer(Node):
     def __init__(self):
         super().__init__("subwoofer")
         self.declare_parameter("simulated", True)
+        self.declare_parameter("update_frequency", 20 * 1e-3)
 
-        self.servos = {
-            "hip_1": Servo(5),
-            "hip_2": Servo(4),
-            "hip_3": Servo(7),
-            "hip_4": Servo(6),
+        use_sim = self.get_parameter("simulated").value
+        update_frequency = self.get_parameter("update_frequency").value
 
-            "upper_1": Servo(2, 80),
-            "upper_2": Servo(3, -80),
-            "upper_3": Servo(13, 60),
-            "upper_4": Servo(12, -80),
+        self.joint_names = [
+            "front_left_hip_servo_to_front_outer_shoulder",
+            "front_left_midlimb_servo_to_front_left_hip",
+            "front_left_wrist_servo_to_front_left_midlimb",
 
-            "lower_1": Servo(0, -90),
-            "lower_2": Servo(1, 90),
-            "lower_3": Servo(15, -100),
-            "lower_4": Servo(14, 100),
-        }
+            "front_right_hip_servo_to_front_outer_shoulder",
+            "front_right_midlimb_servo_to_front_right_hip",
+            "front_right_wrist_servo_to_front_right_midlimb",
 
-        self.pub_servo = self.create_publisher(ServoAngles,
-                                               "subwoofer/servos/angles",
+            "back_left_hip_servo_to_back_inner_shoulder",
+            "back_left_midlimb_servo_to_back_left_hip",
+            "back_left_wrist_servo_to_back_left_midlimb",
+
+            "back_right_hip_servo_to_back_inner_shoulder",
+            "back_right_midlimb_servo_to_back_right_hip",
+            "back_right_wrist_servo_to_back_right_midlimb",
+        ]
+
+        self.servos = [
+            [
+                # Leg 1 hip, upper, lower
+                Servo(5, simulated=use_sim),
+                Servo(2, simulated=use_sim),
+                Servo(0, simulated=use_sim),
+            ],
+            [
+                # Leg 2 hip, upper, lower
+                Servo(4, simulated=use_sim),
+                Servo(3, simulated=use_sim),
+                Servo(1, simulated=use_sim),
+            ],
+            [
+                # Leg 3 hip, upper, lower
+                Servo(7, simulated=use_sim),
+                Servo(13, simulated=use_sim),
+                Servo(15, simulated=use_sim),
+            ],
+            [
+                # Leg 4 hip, upper, lower
+                Servo(6, simulated=use_sim),
+                Servo(12, simulated=use_sim),
+                Servo(14, simulated=use_sim),
+            ],
+        ]
+
+        qos_profile = QoSProfile(depth=10)
+
+        self.pub_joint_states = self.create_publisher(JointState,
+                                               "joint_states",
                                                10)
-        self.servo_timer = self.create_timer(0.02,
+        self.servo_timer = self.create_timer(update_frequency,
                                              self.update_servos)
         self.servo_control = self.create_service(ServoMotion,
                                                  "subwoofer/servos/update",
                                                  self.on_servo_request)
+        
+        self.broadcaster = TransformBroadcaster(self, qos=qos_profile)
+
+
         
 
     def shutdown(self):
@@ -120,25 +169,37 @@ class Subwoofer(Node):
             servo.stop()
 
     def update_servos(self):
-        msg = ServoAngles()
+        msg = JointState()
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.name = self.joint_names
 
-        for i, servo in enumerate(self.servos.values()):
-            servo.update_servo()
-            msg.angles[i] = servo.angle
+        positions = []
+
+        for leg in self.servos:
+            for servo in leg:
+                servo.update_servo()
+                positions.append(float(servo.angle / 180 * np.pi))
+        msg.position = positions
         
-        self.pub_servo.publish(msg)
+        self.pub_joint_states.publish(msg)
 
 
     def on_servo_request(self, request, response):
-        if request.servo_id < 0 or request.servo_id > len(self.servos.values()):
+        if request.leg < 0 or request.leg > 3:
             response.is_valid = False
+            return response
+        if request.servo_id < 0 or request.servo_id > 3:
+            response.is_valid = False
+            return response
+
+        servo: Servo = self.servos[request.leg][request.servo_id]
+        if request.velocity == 0:
+            servo.stop()
         else:
-            servo: Servo = list(self.servos.values())[request.servo_id]
-            if request.velocity == 0:
-                servo.stop()
-            else:
-                servo.set_target(request.angle, request.velocity)
-            response.is_valid = True
+            servo.set_target(request.angle, request.velocity)
+            self.get_logger().info(f"Setting servo {request.leg}-{request.servo_id} to {request.angle}")
+        response.is_valid = True
+        
         return response
 
 
@@ -152,9 +213,9 @@ def main(args=None):
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
-        pass
-    except rclpy.executors.ExternalShutdownException:
-        sys.exit(1)
-    finally:
         node.shutdown()
+    except rclpy.executors.ExternalShutdownException:
+        node.shutdown()
+    finally:
+        rclpy.spin_once(node)
         node.destroy_node()

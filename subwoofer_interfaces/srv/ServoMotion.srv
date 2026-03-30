@@ -1,4 +1,5 @@
-int8 servo_id
+int8 leg
+int8 servo
 float32 angle
 float32 velocity
 ---
