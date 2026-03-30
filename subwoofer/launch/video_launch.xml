@@ -1,3 +1,0 @@
-<launch>
-    <node pkg="v4l2_camera" exec="v4l2_camera_node" />
-</launch>
