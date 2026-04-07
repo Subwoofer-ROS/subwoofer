@@ -188,16 +188,16 @@ class Subwoofer(Node):
         if request.leg < 0 or request.leg > 3:
             response.is_valid = False
             return response
-        if request.servo_id < 0 or request.servo_id > 3:
+        if request.servo not in range(4):
             response.is_valid = False
             return response
 
-        servo: Servo = self.servos[request.leg][request.servo_id]
+        servo: Servo = self.servos[request.leg][request.servo]
         if request.velocity == 0:
             servo.stop()
         else:
             servo.set_target(request.angle, request.velocity)
-            self.get_logger().info(f"Setting servo {request.leg}-{request.servo_id} to {request.angle}")
+            self.get_logger().info(f"Setting servo {request.leg}-{request.servo} to {request.angle}")
         response.is_valid = True
         
         return response
