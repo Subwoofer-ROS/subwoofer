@@ -124,27 +124,27 @@ class Subwoofer(Node):
         self.servos = [
             [
                 # Leg 1 hip, upper, lower
-                Servo(5, simulated=use_sim),
+                Servo(4, simulated=use_sim),
                 Servo(2, simulated=use_sim),
                 Servo(0, simulated=use_sim),
             ],
             [
                 # Leg 2 hip, upper, lower
-                Servo(4, simulated=use_sim),
+                Servo(5, simulated=use_sim),
                 Servo(3, simulated=use_sim),
                 Servo(1, simulated=use_sim),
             ],
             [
                 # Leg 3 hip, upper, lower
-                Servo(7, simulated=use_sim),
-                Servo(13, simulated=use_sim),
-                Servo(15, simulated=use_sim),
+                Servo(10, simulated=use_sim),
+                Servo(12, simulated=use_sim),
+                Servo(14, simulated=use_sim),
             ],
             [
                 # Leg 4 hip, upper, lower
-                Servo(6, simulated=use_sim),
-                Servo(12, simulated=use_sim),
-                Servo(14, simulated=use_sim),
+                Servo(11, simulated=use_sim),
+                Servo(13, simulated=use_sim),
+                Servo(15, simulated=use_sim),
             ],
         ]
 
