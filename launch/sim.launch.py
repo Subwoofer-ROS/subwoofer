@@ -1,4 +1,5 @@
 from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
 from ament_index_python.packages import get_package_share_directory
 from launch_ros.actions import Node
 from launch.substitutions import Command
@@ -12,6 +13,13 @@ def generate_launch_description():
         "urdf",
         "subwoofer.urdf.xacro"
     )
+
+    # Should the joint state publisher be ran?
+    robot_node_arg = DeclareLaunchArgument(name='gui',
+                                    default_value='true',
+                                    choices=['true', 'false'],
+                                    description='Flag to enable joint_state_publisher_gui')
+
 
     robot_description = xacro.process_file(xacro_file).toxml()
 
