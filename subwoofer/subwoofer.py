@@ -1,14 +1,18 @@
-import rclpy
-from rclpy.node import Node
-from rclpy.qos import QoSProfile
+# System imports
 import numpy as np
 import time
+
+# Hardware interface
 from adafruit_pca9685 import PCA9685
 from adafruit_pca9685 import PWMChannel
 import board
 from busio import I2C
 
-from std_msgs.msg import Float32
+# ROS imports
+import rclpy
+from rclpy.node import Node
+from rclpy.qos import QoSProfile
+
 from subwoofer_interfaces.msg import ServoAngles
 from sensor_msgs.msg import JointState
 from subwoofer_interfaces.srv import ServoMotion
