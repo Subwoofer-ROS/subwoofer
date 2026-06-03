@@ -26,10 +26,9 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            "servo = subwoofer.servo_control:main",
-            "leg = subwoofer.leg_control:main",
-            "controller = subwoofer.control_ui:main",
-            "subwoofer = subwoofer.subwoofer:main"
+            "subwoofer = subwoofer.subwoofer:main",
+            "trot_controller = subwoofer.trot_controller:main",
+            "stance_controller = subwoofer.stance_controller:main"
         ],
     },
 )
