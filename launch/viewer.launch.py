@@ -21,28 +21,7 @@ def generate_launch_description():
 
     
 
-    jsp_argument = DeclareLaunchArgument(
-        "jsp",
-        default_value="false",
-        description="Whether to use the default joint state publisher, or wait for a custom one to start."
-    )
-    use_jsp = LaunchConfiguration("jsp")
-    jsp_node = Node(
-        package="joint_state_publisher_gui",
-        executable="joint_state_publisher_gui",
-        name="joint_state_publisher",
-        condition=IfCondition(use_jsp)
-    )
 
-
-    hw_interface_node = Node(
-        package="subwoofer",
-        executable="subwoofer",
-        name="subwoofer",
-        parameters=[{
-            "dedicated_jsp": use_jsp
-        }]
-    )
 
     rsp_node = Node(
         package="robot_state_publisher",
@@ -67,9 +46,6 @@ def generate_launch_description():
 
 
     return LaunchDescription([
-        jsp_argument,
-        hw_interface_node,
-        jsp_node,
         rsp_node,
         rviz_node
     ])
