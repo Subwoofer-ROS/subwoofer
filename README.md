@@ -3,13 +3,12 @@
 Subwoofer is a robotic quadruped developed from the microspot project for ROS2 Humble.
 
 ## Startup sequence
-Boot sequence:
-1. Before starting any nodes, set the legs so each leg is fully bent and flush with the ground. The hips should be at 0.
-2. Next, launch `behaviour.launch.py`, which will start the behaviour manager and all behaviour nodes.
-3. Once the state manager reports online, run the `subwoofer` node with `simulated:=false` (likely to be merged with `behaviour.launch.py` in the future).
-4. Finally, launch `remote_controller.launch.py` (currently tested on the Switch 1 joycons, may need remapping for other controllers for correct button labelling).
+On the robot pi, launch `subwoofer bringup.launch.pi simulated:=false`
+- If your controller is connected to the robot itself, add the flag `controller:=true` to auto-launch the relevant node.
+- Otherwise, run `joy joy_node` on a machine connected to the robot.
 
-The robot pose can be visualised in RViz2 by launching `viewer.launch.py`.
+The robot will now be operational.
+If you wish to monitor the robot, launching `viewer.launch.py` on a machine connected to the robot will bring up a monitoring rviz window.
 
 
 
