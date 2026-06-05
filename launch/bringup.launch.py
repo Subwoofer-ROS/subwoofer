@@ -1,8 +1,3 @@
-import os
-import xacro
-
-from ament_index_python.packages import get_package_share_directory
-
 from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription
 from launch.substitutions import PathJoinSubstitution
@@ -20,8 +15,10 @@ def generate_launch_description():
         default_value="false")
     camera_arg = DeclareLaunchArgument(
         "camera",
-        default_value="true"
-    )
+        default_value="true")
+    controller_arg = DeclareLaunchArgument(
+        "launch_controller",
+        default_value="true")
     
     hardware_launch = IncludeLaunchDescription(
         PathJoinSubstitution([
@@ -40,7 +37,10 @@ def generate_launch_description():
             FindPackageShare("subwoofer"),
             "launch",
             "control.launch.py"
-        ])
+        ]),
+        launch_arguments={
+            "launch_controller": LaunchConfiguration("launch_controller")
+        }
     )
 
     behaviour_launch = IncludeLaunchDescription(
@@ -56,6 +56,7 @@ def generate_launch_description():
         simulated_arg,
         rviz_arg,
         camera_arg,
+        controller_arg,
 
         hardware_launch,
         control_launch,
