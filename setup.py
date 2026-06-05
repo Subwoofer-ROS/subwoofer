@@ -28,7 +28,9 @@ setup(
         'console_scripts': [
             "subwoofer = subwoofer.subwoofer:main",
             "trot_controller = subwoofer.trot_controller:main",
-            "stance_controller = subwoofer.stance_controller:main"
+            "stance_controller = subwoofer.stance_controller:main",
+            "state_manager = subwoofer.state_manager:main",
+            "remote_controller = subwoofer.remote_controller:main"
         ],
     },
 )

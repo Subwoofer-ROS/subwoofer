@@ -9,9 +9,11 @@ from rclpy.node import Node
 
 # Interfaces
 from sensor_msgs.msg import JointState
+from std_msgs.msg import String
 
 # IK import
 from subwoofer.kinematics.leg_kinematics import LegKinematics
+from subwoofer.robot_state import RobotState
 
 
 class LegTarget:
@@ -24,12 +26,58 @@ class SubwooferController(Node):
     def __init__(self):
         super().__init__("trot_controller")
 
-        self.start_time = time.time()
+        # Robot state
+        self.robot_state = RobotState.STORAGE
+        self.robot_state_sub = self.create_subscription(
+            String,
+            "/robot_state",
+            self.robot_state_callback,
+            10
+        )
+
+        self.robot_state_requester = self.create_publisher(
+            String,
+            "/robot_state_request",
+            10
+        )
+        self.stance_target = None
+        self.stance_target_sub = self.create_subscription(
+            JointState,
+            "/stance_target",
+            self.stance_target_callback,
+            10
+        )
+
+
+        self.joint_names = [
+            "front_left_hip_servo_to_front_outer_shoulder",
+            "front_left_midlimb_servo_to_front_left_hip",
+            "front_left_wrist_servo_to_front_left_midlimb",
+
+            "front_right_hip_servo_to_front_outer_shoulder",
+            "front_right_midlimb_servo_to_front_right_hip",
+            "front_right_wrist_servo_to_front_right_midlimb",
+
+            "back_left_hip_servo_to_back_inner_shoulder",
+            "back_left_midlimb_servo_to_back_left_hip",
+            "back_left_wrist_servo_to_back_left_midlimb",
+
+            "back_right_hip_servo_to_back_inner_shoulder",
+            "back_right_midlimb_servo_to_back_right_hip",
+            "back_right_wrist_servo_to_back_right_midlimb"
+        ]
+
+
+        # Start values
+        self.start_time = time.monotonic()
+        self.trot_origin = {}
 
         self.declare_parameter("step_length", 0.08)
         self.declare_parameter("step_height", 0.03)
         self.declare_parameter("stance_height", 0.18)
         self.declare_parameter("gait_frequency", 1.0) #Hz
+        
+        self.last_position_sent = None
 
         self.kinematics = LegKinematics()
         
@@ -44,7 +92,26 @@ class SubwooferController(Node):
             self.publish_pose
         )
 
+    def robot_state_callback(self, msg: String):
+        state_was_active = self.robot_state == RobotState.TROT
 
+        try:
+            self.robot_state = RobotState(msg.data)
+        except ValueError:
+            self.get_logger().warn(f"Invalid state {msg.data} published.")
+            return
+        
+        if self.robot_state == RobotState.TROT and not state_was_active:
+            self.get_logger().info(f"Trot controller now ACTIVE.")
+            self.start_time = time.monotonic()
+        elif self.robot_state != RobotState.TROT and state_was_active:
+            self.get_logger().info(f"Trot controller now IDLE.")
+
+    def stance_target_callback(self, msg: JointState):
+        self.stance_target = msg.position
+
+        
+          
 
     def foot_target(self, t, x_offset = 0.0):
         STEP_HEIGHT = self.get_parameter("step_height").get_parameter_value().double_value
@@ -71,7 +138,8 @@ class SubwooferController(Node):
         return x, y, z
 
 
-    def publish_pose(self):
+
+    def behaviour_trot(self):
         msg = JointState()
         msg.header.stamp = self.get_clock().now().to_msg()
 
@@ -96,7 +164,7 @@ class SubwooferController(Node):
 
 
         freq = self.get_parameter("gait_frequency").get_parameter_value().double_value
-        elapsed_time = time.time() - self.start_time
+        elapsed_time = time.monotonic() - self.start_time
         phase = 2 * np.pi * freq * elapsed_time
 
         # Calculate foot positions
@@ -203,8 +271,15 @@ class SubwooferController(Node):
             )
 
 
-
+        self.last_position_sent = msg.position
         self.pub.publish(msg)
+
+
+
+    def publish_pose(self):
+        if self.robot_state == RobotState.TROT:
+            self.behaviour_trot()
+
 
 
 

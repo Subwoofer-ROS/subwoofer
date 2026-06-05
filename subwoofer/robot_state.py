@@ -1,0 +1,11 @@
+from enum import Enum
+
+
+class RobotState(str, Enum):
+    STORAGE = "STORAGE"
+    STANDING_UP = "STANDING_UP"
+    SITTING_DOWN = "SITTING_DOWN"
+    STANCE = "STANCE"
+    TROT = "TROT"
+    TRANSITION_TO_TROT = "TRANSITION_TO_TROT"
+    TRANSITION_FROM_TROT = "TRANSITION_FROM_TROT"
