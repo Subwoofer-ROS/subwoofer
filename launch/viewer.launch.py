@@ -11,27 +11,6 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    xacro_file = os.path.join(
-        get_package_share_directory("subwoofer_model"),
-        "model",
-        "subwoofer.urdf.xacro"
-    )
-
-    robot_description = xacro.process_file(xacro_file).toxml()
-
-    
-
-
-
-    rsp_node = Node(
-        package="robot_state_publisher",
-        executable="robot_state_publisher",
-        output="screen",
-        parameters=[{
-            "robot_description": robot_description
-        }]
-    )
-    
     rviz_node = Node(
         package="rviz2",
         executable="rviz2",
@@ -40,12 +19,11 @@ def generate_launch_description():
         arguments=["-d", os.path.join(
             get_package_share_directory("subwoofer_model"),
             "rviz",
-            "urdf.rviz"
+            "subwoofer.rviz"
         )]
     )
 
 
     return LaunchDescription([
-        rsp_node,
         rviz_node
     ])
