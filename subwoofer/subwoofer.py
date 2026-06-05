@@ -49,7 +49,10 @@ class Servo:
     def set_servo(self, angle) -> None:
         self.angle = angle + self.angle_offset
         if not self.simulated:
-            self.channel.duty_cycle =  self._angle_to_dc(self.angle)
+            try:
+                self.channel.duty_cycle =  self._angle_to_dc(self.angle)
+            except OSError as e:
+                print(f"Error trying to send duty cycle")
 
     def get_angle(self) -> float:
         return self.angle - self.angle_offset
@@ -64,10 +67,10 @@ class Subwoofer(Node):
     def __init__(self):
         super().__init__("subwoofer")
         self.declare_parameter("simulated", True)
-        self.declare_parameter("update_frequency", 20e-3)
-        self.declare_parameter("dedicated_jsp", False)
+        self.declare_parameter("update_frequency", 0.02)
 
-        use_sim = self.get_parameter("simulated").value
+        use_sim = self.get_parameter("simulated").get_parameter_value().bool_value
+        self.get_logger().info(f"Subwoofer launching as {'SIMULATED' if use_sim else 'LIVE'}")
 
         self.joints = {
             "front_left_hip_servo_to_front_outer_shoulder": Servo(11,
@@ -110,7 +113,7 @@ class Subwoofer(Node):
                                                                 simulated=use_sim),
 
             "back_right_hip_servo_to_back_inner_shoulder": Servo(4,
-                                                                  mirror=True,
+                                                                 mirror=True,
                                                                  simulated=use_sim),
             "back_right_midlimb_servo_to_back_right_hip": Servo(2,
                                                                 mirror=False,
@@ -122,18 +125,26 @@ class Subwoofer(Node):
                                                                   angle_offset=-1.07,
                                                                   simulated=use_sim),
         }
+
+        self.last_position_request: dict[str, float] | None = None
         
         self.sub_joint_states = self.create_subscription(JointState,
                                                          "joint_command",
                                                          self.on_joint_states,
                                                          1)
-    
 
-        if not self.get_parameter("dedicated_jsp").value:
-            self.pub_servo_positions = self.create_publisher(JointState,
-                                                            "joint_states",
-                                                            10)
-            self.servo_state_timer = self.create_timer(0.1, self.servo_states)
+
+        self.pub_servo_positions = self.create_publisher(JointState,
+                                                        "joint_states",
+                                                        10)
+        self.servo_state_timer = self.create_timer(0.1, self.servo_states)
+
+        self.servo_write = self.create_timer(
+            self.get_parameter("update_frequency").get_parameter_value().double_value,
+            self.servo_update
+        )
+
+        self.get_logger().info("Subwoofer is online")
 
 
 
@@ -145,12 +156,24 @@ class Subwoofer(Node):
 
 
     def on_joint_states(self, msg: JointState):
+        pose = {}
         for name, position in zip(msg.name, msg.position):
             if name not in self.joints.keys():
                 self.get_logger().warning(f"Joint {name} is invalid, ignoring...")
                 continue
+            pose[name] = position
+        self.last_position_request = pose
+
+    def servo_update(self):
+        if self.last_position_request is None:
+            return
+        for name, pose in self.last_position_request.items():
             servo = self.joints[name]
-            servo.set_servo(position)
+            try:
+                servo.set_servo(pose)
+            except OSError as e:
+                self.get_logger().error(f"I2C write failed on servo {name}")
+
 
     def servo_states(self):
         msg = JointState()
@@ -166,9 +189,8 @@ class Subwoofer(Node):
         msg.name = names
         msg.position = values
 
-        self.get_logger().info(f"Joint values: {values}")
-        self.get_logger().info(f"Ducy Cycles: {dcs}")
-        
+        self.get_logger().debug(f"Joint values: {values}")
+        self.get_logger().debug(f"Duty Cycles: {dcs}")
 
         self.pub_servo_positions.publish(msg)
 
